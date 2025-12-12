@@ -1,15 +1,22 @@
 import { COLORS } from "@/src/constants/theme";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export const QuickActionGrid = () => {
+  const router = useRouter();
+
   return (
     <View>
       <Text style={styles.sectionTitle}>Menu Cepat</Text>
       <View style={styles.menuGrid}>
         <MenuButton icon="file-text" label="Slip Gaji" />
-        <MenuButton icon="clock" label="Lembur" />
+        <MenuButton
+          icon="clock"
+          label="Lembur"
+          onPress={() => router.push("/lembur")}
+        />
         <MenuButton icon="users" label="Tim Saya" />
         <MenuButton icon="briefcase" label="Dinas" />
       </View>
@@ -17,8 +24,8 @@ export const QuickActionGrid = () => {
   );
 };
 
-const MenuButton = ({ icon, label }: any) => (
-  <TouchableOpacity style={styles.menuButton}>
+const MenuButton = ({ icon, label, onPress }: any) => (
+  <TouchableOpacity style={styles.menuButton} onPress={onPress}>
     <View style={styles.menuIconContainer}>
       <Feather name={icon} size={24} color={COLORS.primary} />
     </View>
