@@ -1,4 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
@@ -19,14 +19,15 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import QuickActionModal from "../shared/QuickActionModal"; // Pastikan path benar
 
-// --- KONFIGURASI UKURAN ---
+// Gunakan path relative yang aman
+import QuickActionModal from "../shared/QuickActionModal";
+
 const BAR_HEIGHT = 70;
 const BOTTOM_MARGIN = 20;
 const PILL_RADIUS = 35;
-const FAB_SIZE = 64; // Ukuran tombol plus
-const BUBBLE_SIZE = 45; // Ukuran highlight background tab aktif
+const FAB_SIZE = 64;
+const BUBBLE_SIZE = 45;
 
 export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
   state,
@@ -37,19 +38,16 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
   const [measures, setMeasures] = useState<Record<number, number>>({});
   const [isModalVisible, setModalVisible] = useState(false);
 
-  // Cek apakah tab aktif adalah "create" (tombol tengah)
   const isCreateTabFocused = state.routeNames[state.index] === "create";
 
-  // --- ANIMASI BUBBLE BACKGROUND ---
+  // --- ANIMASI BUBBLE ---
   const bubbleOpacity = useSharedValue(0);
   const bubbleTranslateX = useSharedValue(0);
 
   useEffect(() => {
-    // Jika tab aktif adalah create, sembunyikan bubble
     if (isCreateTabFocused) {
       bubbleOpacity.value = withTiming(0);
     } else {
-      // Pindahkan bubble ke posisi tab yang aktif
       const targetX = measures[state.index];
       if (targetX !== undefined) {
         bubbleTranslateX.value = withSpring(targetX, {
@@ -66,17 +64,19 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
     transform: [{ translateX: bubbleTranslateX.value }],
   }));
 
-  // --- HANDLER TOMBOL TENGAH (FAB) ---
   const handleFabPress = async () => {
+    // console.log("FAB Pressed"); // Uncomment untuk debug di logcat
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setModalVisible(true);
   };
 
   return (
+    // FIX 1: Hapus pointerEvents="box-none" di root container agar event touch stabil
+    // FIX 2: Tambahkan zIndex tinggi agar floating di atas konten screen
     <View
       style={[styles.rootContainer, { bottom: insets.bottom + BOTTOM_MARGIN }]}
     >
-      {/* 1. BACKGROUND PILL (Blur / Solid) */}
+      {/* 1. BACKGROUND PILL */}
       <View style={styles.pillContainer}>
         {Platform.OS === "ios" ? (
           <BlurView
@@ -89,7 +89,6 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
 
         {/* 2. ROW OF TABS */}
         <View style={styles.tabRow}>
-          {/* Animated Bubble Background (Absolute in Row) */}
           <Animated.View style={[styles.activeBubble, animatedBubbleStyle]} />
 
           {state.routes.map((route, index) => {
@@ -97,12 +96,10 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
             const isFocused = state.index === index;
             const isCreate = route.name === "create";
 
-            // Jika ini slot untuk tombol tengah, render Spacer kosong
             if (isCreate) {
               return <View key={route.key} style={styles.tabSpacer} />;
             }
 
-            // Handler Tab Biasa
             const onPress = () => {
               const event = navigation.emit({
                 type: "tabPress",
@@ -116,15 +113,15 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
               }
             };
 
-            // Ukur posisi X untuk animasi bubble
             const onLayout = (e: LayoutChangeEvent) => {
               const { x, width } = e.nativeEvent.layout;
-              // Simpan posisi tengah tab relatif terhadap row
               setMeasures((prev) => ({
                 ...prev,
                 [index]: x + width / 2 - BUBBLE_SIZE / 2,
               }));
             };
+
+            const IconComponent = options.tabBarIcon;
 
             return (
               <TouchableOpacity
@@ -134,31 +131,27 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
                 style={styles.tabItem}
                 activeOpacity={0.7}
               >
-                <Ionicons
-                  name={
-                    isFocused
-                      ? (options.tabBarIcon as any)?.({
-                          focused: true,
-                          color: "",
-                        })?.props?.name
-                      : (options.tabBarIcon as any)?.({
-                          focused: false,
-                          color: "",
-                        })?.props?.name || "square"
-                  }
-                  size={24}
-                  color={isFocused ? "#FFF" : "#9aa0a6"}
-                />
+                {IconComponent && (
+                  <IconComponent
+                    focused={isFocused}
+                    color={isFocused ? "#FFF" : "#9aa0a6"}
+                    size={24}
+                  />
+                )}
               </TouchableOpacity>
             );
           })}
         </View>
       </View>
 
-      {/* 3. FLOATING ACTION BUTTON (FAB) - Di luar Pill agar lebih besar */}
+      {/* 3. FAB BUTTON (Tombol Tengah) */}
+      {/* FIX 3: Container FAB harus punya zIndex lebih tinggi dari Pill */}
+      {/* FIX 4: elevation tinggi untuk Android */}
       <View style={styles.fabContainer}>
         <Pressable
           onPress={handleFabPress}
+          // FIX 5: Area sentuh diperluas
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           style={({ pressed }) => [
             styles.fabButton,
             pressed && { transform: [{ scale: 0.95 }] },
@@ -175,11 +168,10 @@ export const AnimatedTabBar: React.FC<BottomTabBarProps> = ({
         </Pressable>
       </View>
 
-      {/* 4. MODAL COMPONENT */}
+      {/* 4. MODAL */}
       <QuickActionModal
         visible={isModalVisible}
         onClose={() => setModalVisible(false)}
-        navigation={navigation}
       />
     </View>
   );
@@ -192,24 +184,24 @@ const styles = StyleSheet.create({
     right: 20,
     alignItems: "center",
     justifyContent: "center",
-    // Hindari SafeAreaView disini agar posisi absolute lebih presisi
+    zIndex: 100, // Pastikan di atas konten scrollview
   },
-
-  // --- PILL STYLES ---
   pillContainer: {
     width: "100%",
     height: BAR_HEIGHT,
     borderRadius: PILL_RADIUS,
-    overflow: "hidden", // Penting untuk BlurView
+    overflow: "hidden",
+    // Shadow standar
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
-    elevation: 10,
+    elevation: 5, // Elevation rendah agar FAB bisa di atasnya
+    backgroundColor: "transparent", // Penting
   },
   pillSolidBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(26,27,31,0.95)", // Warna gelap solid/transparan
+    backgroundColor: "rgba(26,27,31,0.95)",
     zIndex: -1,
   },
   tabRow: {
@@ -217,8 +209,6 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
   },
-
-  // --- TAB ITEMS ---
   tabItem: {
     flex: 1,
     height: "100%",
@@ -227,27 +217,26 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   tabSpacer: {
-    flex: 1, // Mengambil ruang kosong di tengah untuk FAB
+    flex: 1,
     pointerEvents: "none",
   },
-
-  // --- BUBBLE INDICATOR ---
   activeBubble: {
     position: "absolute",
     width: BUBBLE_SIZE,
     height: BUBBLE_SIZE,
     borderRadius: BUBBLE_SIZE / 2,
-    backgroundColor: "rgba(255,255,255,0.1)", // Highlight halus
+    backgroundColor: "rgba(255,255,255,0.1)",
     zIndex: 1,
   },
-
-  // --- FAB STYLES ---
+  // --- FAB STYLES YANG DIPERBAIKI ---
   fabContainer: {
     position: "absolute",
-    bottom: BAR_HEIGHT / 2 - FAB_SIZE / 2 + 5, // Mengangkat FAB sedikit ke atas (offset)
+    // Mengangkat FAB agar setengahnya keluar dari pill
+    bottom: BAR_HEIGHT / 2 - FAB_SIZE / 2 + 5,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 10,
+    zIndex: 999, // Super tinggi agar selalu menang klik
+    elevation: 10, // Android: Lebih tinggi dari pillContainer (5)
   },
   fabButton: {
     width: FAB_SIZE,
@@ -257,7 +246,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
-    elevation: 8,
+    elevation: 10, // Android shadow
   },
   fabGradient: {
     width: "100%",
@@ -266,6 +255,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
-    borderColor: "#1a1a1a", // Border gelap agar menyatu dengan background (opsional)
+    borderColor: "#1a1a1a", // Border gelap agar menyatu dengan background
   },
 });
