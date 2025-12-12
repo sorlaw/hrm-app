@@ -69,10 +69,14 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({
     })
   ).current;
 
-  const handlePress = (screen: string) => {
+  const handlePress = (target: string) => {
     onClose();
-    if (screen === "FormCuti") router.push("/form-cuti");
-    else console.log(screen);
+    if (target === "FormCuti") router.push("/form-cuti");
+    else if (target === "Lembur") router.push("/form-lembur");
+    else if (target === "Sakit") router.push("/form-sakit");
+    else if (target === "Klaim")
+      router.push("/form-klaim"); // <-- Tambahkan ini
+    else console.log("Fitur: " + target);
   };
 
   if (!showModal) return null;
