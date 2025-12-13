@@ -3,13 +3,6 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-// Warna khusus priority (bisa dipindah ke theme.ts jika mau)
-const PRIORITY_COLORS = {
-  High: "#EF4444", // Merah
-  Medium: "#F59E0B", // Kuning
-  Low: "#10B981", // Hijau
-};
-
 interface TaskItem {
   id: string;
   title: string;
@@ -20,169 +13,164 @@ interface TaskItem {
   progress: number;
 }
 
-export const TaskCard = ({ item }: { item: TaskItem }) => {
+interface TaskCardProps {
+  item: TaskItem;
+  onPress: () => void; // Klik Kartu (Ke Detail)
+  onOptionPress: () => void; // Klik Titik Tiga (Ke Menu Edit/Hapus)
+}
+
+export const TaskCard = ({ item, onPress, onOptionPress }: TaskCardProps) => {
   const getPriorityColor = (priority: string) => {
-    return (
-      PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] ||
-      COLORS.textLight
-    );
+    switch (priority) {
+      case "High":
+        return "#EF4444";
+      case "Medium":
+        return "#F59E0B";
+      default:
+        return "#10B981";
+    }
   };
 
-  const priorityColor = getPriorityColor(item.priority);
-
   return (
-    <View style={styles.taskCard}>
-      {/* Header Kartu: Priority & Menu */}
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={onPress} // <-- Navigasi ke Detail
+    >
+      {/* HEADER: Project, Priority, & Option Menu */}
       <View style={styles.cardHeader}>
-        <View
-          style={[
-            styles.priorityBadge,
-            { backgroundColor: priorityColor + "15" },
-          ]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {item.priority} Priority
-          </Text>
-        </View>
-        <TouchableOpacity>
-          <Feather name="more-horizontal" size={20} color={COLORS.textLight} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Judul & Deskripsi */}
-      <Text style={styles.taskTitle}>{item.title}</Text>
-      <Text style={styles.projectLabel}>{item.project}</Text>
-
-      {/* Progress Bar (Hanya untuk In Progress) */}
-      {item.status === "In Progress" && (
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBarBg}>
-            <View
-              style={[styles.progressBarFill, { width: `${item.progress}%` }]}
-            />
-          </View>
-          <Text style={styles.progressText}>{item.progress}%</Text>
-        </View>
-      )}
-
-      {/* Footer: Deadline & Team */}
-      <View style={styles.cardFooter}>
-        <View style={styles.deadlineInfo}>
-          <Feather name="clock" size={14} color={COLORS.textLight} />
-          <Text style={styles.deadlineText}>{item.deadline}</Text>
-        </View>
-
-        {/* Avatar Tim (Dummy) */}
-        <View style={styles.avatarGroup}>
-          <View style={[styles.avatar, { backgroundColor: "#FFCCBC" }]}>
-            <Text style={styles.avatarText}>R</Text>
+        {/* Grup Kiri: Project & Priority */}
+        <View style={styles.headerLeft}>
+          <View style={styles.projectTag}>
+            <Text style={styles.projectText}>{item.project}</Text>
           </View>
           <View
             style={[
-              styles.avatar,
-              { backgroundColor: "#C5CAE9", marginLeft: -10 },
+              styles.priorityBadge,
+              { backgroundColor: getPriorityColor(item.priority) + "20" },
             ]}
           >
-            <Text style={styles.avatarText}>A</Text>
+            <Text
+              style={[
+                styles.priorityText,
+                { color: getPriorityColor(item.priority) },
+              ]}
+            >
+              {item.priority}
+            </Text>
           </View>
         </View>
+
+        {/* Grup Kanan: Tombol Titik Tiga */}
+        <TouchableOpacity style={styles.optionBtn} onPress={onOptionPress}>
+          <Feather name="more-vertical" size={20} color={COLORS.textLight} />
+        </TouchableOpacity>
       </View>
-    </View>
+
+      {/* Title */}
+      <Text style={styles.title} numberOfLines={2}>
+        {item.title}
+      </Text>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <View style={styles.dateRow}>
+          <Feather name="clock" size={14} color={COLORS.textLight} />
+          <Text style={styles.dateText}>{item.deadline}</Text>
+        </View>
+
+        {item.status !== "Completed" ? (
+          <Text style={styles.progressText}>{item.progress}%</Text>
+        ) : (
+          <Feather name="check-circle" size={18} color={COLORS.success} />
+        )}
+      </View>
+
+      {/* Progress Bar */}
+      <View style={styles.progressBarBg}>
+        <View
+          style={[
+            styles.progressBarFill,
+            {
+              width: `${item.progress}%`,
+              backgroundColor:
+                item.progress === 100 ? COLORS.success : COLORS.primary,
+            },
+          ]}
+        />
+      </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  taskCard: {
-    backgroundColor: COLORS.card,
+  card: {
+    backgroundColor: "#FFF",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
-    shadowRadius: 5,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  headerLeft: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    flex: 1,
+    flexWrap: "wrap",
   },
+  projectTag: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  projectText: { fontSize: 11, color: COLORS.text, fontWeight: "600" },
+  priorityBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   priorityText: {
     fontSize: 10,
     fontWeight: "bold",
     textTransform: "uppercase",
   },
-  taskTitle: {
+
+  // Style Tombol Titik Tiga
+  optionBtn: {
+    padding: 4,
+    marginRight: -8,
+    marginTop: -4, // Agar area sentuh enak tapi posisi pas
+  },
+
+  title: {
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
-    marginBottom: 4,
-  },
-  projectLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginBottom: 12,
-  },
-  progressContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
     marginBottom: 15,
   },
-  progressBarBg: {
-    flex: 1,
-    height: 6,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 3,
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: COLORS.accent,
-    borderRadius: 3,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: COLORS.accent,
-  },
-  cardFooter: {
+  footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
-    paddingTop: 12,
+    marginBottom: 10,
   },
-  deadlineInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  dateRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  dateText: { fontSize: 12, color: COLORS.textLight },
+  progressText: { fontSize: 12, fontWeight: "bold", color: COLORS.primary },
+  progressBarBg: {
+    height: 6,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 3,
+    overflow: "hidden",
   },
-  deadlineText: {
-    fontSize: 12,
-    color: COLORS.textLight,
-  },
-  avatarGroup: {
-    flexDirection: "row",
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#FFF",
-  },
-  avatarText: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#333",
-  },
+  progressBarFill: { height: "100%", borderRadius: 3 },
 });

@@ -34,6 +34,10 @@ export default function RootLayout() {
           name="form-dinas"
           options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
+        <Stack.Screen
+          name="form-tugas"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
 
         {/* --- DETAIL SCREEN (CARD STYLE: Slide dari Samping) --- */}
         <Stack.Screen
@@ -50,6 +54,14 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="tim-saya"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="notifikasi"
+          options={{ animation: "slide_from_right" }}
+        />
+        <Stack.Screen
+          name="detail-tugas"
           options={{ animation: "slide_from_right" }}
         />
       </Stack>

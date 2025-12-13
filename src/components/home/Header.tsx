@@ -1,5 +1,6 @@
 import { COLORS } from "@/src/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -9,13 +10,18 @@ interface HeaderProps {
 }
 
 export const Header = ({ name, role }: HeaderProps) => {
+  const router = useRouter();
+
   return (
     <View style={styles.header}>
       <View>
         <Text style={styles.greeting}>Halo, {name} 👋</Text>
         <Text style={styles.subGreeting}>{role}</Text>
       </View>
-      <TouchableOpacity style={styles.notifButton}>
+      <TouchableOpacity
+        style={styles.notifButton}
+        onPress={() => router.push("/notifikasi")}
+      >
         <Ionicons
           name="notifications-outline"
           size={24}

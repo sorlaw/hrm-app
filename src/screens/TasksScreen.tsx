@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { Alert, FlatList, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../constants/theme";
 
 // Import Komponen Modular
+import { useRouter } from "expo-router";
 import { EmptyState } from "../components/tasks/EmptyState";
 import { Header } from "../components/tasks/Header";
 import { TaskCard } from "../components/tasks/TaskCard";
@@ -19,72 +20,123 @@ const TASKS_DATA = [
     priority: "High",
     status: "In Progress",
     progress: 75,
+    type: "assigned", // 👈 Tugas dari Bos
+    assigner: "Pak Budi (CTO)", // 👈 Yang nyuruh
+    description: "Tolong perbaiki bug login Android 13 secepatnya.",
   },
   {
     id: "2",
-    title: "Meeting Review Q3",
-    project: "Internal Management",
-    deadline: "Besok, 10:00",
+    title: "Riset Library Maps Baru",
+    project: "R&D",
+    deadline: "Jumat Nanti",
     priority: "Medium",
     status: "To Do",
     progress: 0,
+    type: "personal", // 👈 Tugas Inisiatif Sendiri
+    assigner: "Saya Sendiri",
+    description: "Cari alternatif Google Maps yang lebih murah.",
   },
   {
     id: "3",
-    title: "Update Dokumentasi API",
-    project: "Backend Service",
-    deadline: "15 Des 2025",
-    priority: "Low",
+    title: "Siapkan Materi Presentasi Q3",
+    project: "Management",
+    deadline: "Besok, 09:00",
+    priority: "High",
     status: "To Do",
     progress: 0,
+    type: "assigned",
+    assigner: "Bu Siska (VP)",
+    description: "Slide presentasi harus sudah siap sebelum meeting pagi.",
   },
   {
     id: "4",
-    title: "Desain Mockup Dashboard",
-    project: "Client Project A",
+    title: "Upload Bukti Reimbursement",
+    project: "Admin",
     deadline: "Selesai",
-    priority: "High",
+    priority: "Low",
     status: "Completed",
     progress: 100,
+    type: "personal",
+    assigner: "Saya Sendiri",
+    description: "Jangan lupa upload struk makan siang bareng klien.",
   },
 ];
 
 const TasksScreen = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("To Do");
 
   // Logic Filter
   const getFilteredTasks = () => {
+    // Filter Tab Status
+    let filtered = TASKS_DATA;
     if (activeTab === "Completed") {
-      return TASKS_DATA.filter((task) => task.status === "Completed");
+      filtered = TASKS_DATA.filter((task) => task.status === "Completed");
     } else if (activeTab === "In Progress") {
-      return TASKS_DATA.filter((task) => task.status === "In Progress");
+      filtered = TASKS_DATA.filter((task) => task.status === "In Progress");
+    } else {
+      filtered = TASKS_DATA.filter((task) => task.status === "To Do");
     }
-    return TASKS_DATA.filter((task) => task.status === "To Do");
+    return filtered;
   };
 
   const filteredData = getFilteredTasks();
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Container utama dengan padding horizontal */}
       <View style={styles.contentContainer}>
-        {/* 1. Header */}
+        {/* Header */}
         <Header
           taskCount={filteredData.length}
-          onAddPress={() => console.log("Tambah Tugas")}
+          onAddPress={() => router.push("/form-tugas")}
         />
 
-        {/* 2. Tabs */}
+        {/* Tabs */}
         <TaskTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* 3. Task List */}
+        {/* List */}
         <FlatList
           data={filteredData}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={<EmptyState />}
-          renderItem={({ item }) => <TaskCard item={item} />}
+          renderItem={({ item }) => (
+            <TaskCard
+              item={item}
+              onPress={() => {
+                // Kirim data type & assigner ke detail
+                router.push({
+                  pathname: "/detail-tugas",
+                  params: {
+                    title: item.title,
+                    project: item.project,
+                    deadline: item.deadline,
+                    priority: item.priority,
+                    status: item.status,
+                    progress: item.progress,
+                    description: item.description,
+                    type: item.type, // 👈 Kirim Type
+                    assigner: item.assigner, // 👈 Kirim Nama Bos
+                  },
+                });
+              }}
+              onOptionPress={() => {
+                Alert.alert("Opsi Tugas", `Pilih aksi untuk "${item.title}"`, [
+                  {
+                    text: "Edit",
+                    onPress: () => console.log("Edit " + item.id),
+                  },
+                  {
+                    text: "Hapus",
+                    onPress: () => console.log("Hapus " + item.id),
+                    style: "destructive",
+                  },
+                  { text: "Batal", style: "cancel" },
+                ]);
+              }}
+            />
+          )}
         />
       </View>
     </SafeAreaView>
