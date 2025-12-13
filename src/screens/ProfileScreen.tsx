@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "../constants/theme";
 
 // Import Komponen Modular
+import { useRouter } from "expo-router";
 import { InfoCard } from "../components/profile/InfoCard";
 import { InfoItem } from "../components/profile/InfoItem";
 import { LogoutButton } from "../components/profile/LogoutButton";
@@ -11,6 +12,7 @@ import { MenuListItem } from "../components/profile/MenuListItem";
 import { ProfileHeader } from "../components/profile/ProfileHeader";
 
 const ProfileScreen = () => {
+  const router = useRouter();
   // Data Dummy Pengguna
   const userData = {
     name: "Putra Jangjaya",
@@ -64,6 +66,20 @@ const ProfileScreen = () => {
             icon="shield"
             label="Keamanan Biometrik (Face ID)"
             isToggle={true}
+          />
+        </InfoCard>
+
+        <InfoCard title="Dokumen & Keuangan">
+          <MenuListItem
+            icon="file-text"
+            label="Slip Gaji"
+            onPress={() => router.push("/slip-gaji")}
+          />
+          <MenuListItem
+            icon="pie-chart"
+            label="Laporan Pajak (SPT)"
+            onPress={() => console.log("SPT")}
+            isLast={true}
           />
         </InfoCard>
 

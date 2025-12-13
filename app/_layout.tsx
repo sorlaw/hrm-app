@@ -7,29 +7,51 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          // 👇 INI KUNCINYA: Mengaktifkan animasi native iOS/Android
           animation: "default",
-          // 👇 Agar user bisa swipe-back (geser dari kiri layar) di iOS
           gestureEnabled: true,
         }}
       >
         <Stack.Screen name="(tabs)" />
 
-        {/* Opsional: Khusus Form, biasanya lebih enak pakai animasi Modal (Slide dari bawah) */}
+        {/* --- FORM (MODAL STYLE: Slide dari Bawah) --- */}
         <Stack.Screen
           name="form-lembur"
-          options={{
-            presentation: "modal", // atau 'card' jika ingin slide dari samping
-            animation: "slide_from_bottom",
-          }}
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="form-cuti"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="form-sakit"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="form-klaim"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
+        />
+        <Stack.Screen
+          name="form-dinas"
+          options={{ presentation: "modal", animation: "slide_from_bottom" }}
         />
 
-        <Stack.Screen name="form-cuti" options={{ presentation: "modal" }} />
-        <Stack.Screen name="form-sakit" options={{ presentation: "modal" }} />
-        <Stack.Screen name="form-klaim" options={{ presentation: "modal" }} />
+        {/* --- DETAIL SCREEN (CARD STYLE: Slide dari Samping) --- */}
+        <Stack.Screen
+          name="lembur"
+          options={{ animation: "slide_from_right" }}
+        />
 
-        {/* Untuk halaman biasa (bukan form), biarkan ikut default (slide samping) */}
-        <Stack.Screen name="lembur" />
+        {/* 👇 TAMBAHKAN INI: Slip Gaji */}
+        <Stack.Screen
+          name="slip-gaji"
+          options={{
+            animation: "slide_from_right", // Masuk dari kanan, terasa lebih natural untuk menu detail
+          }}
+        />
+        <Stack.Screen
+          name="tim-saya"
+          options={{ animation: "slide_from_right" }}
+        />
       </Stack>
     </GestureHandlerRootView>
   );

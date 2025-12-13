@@ -11,14 +11,26 @@ export const QuickActionGrid = () => {
     <View>
       <Text style={styles.sectionTitle}>Menu Cepat</Text>
       <View style={styles.menuGrid}>
-        <MenuButton icon="file-text" label="Slip Gaji" />
+        <MenuButton
+          icon="file-text"
+          label="Slip Gaji"
+          onPress={() => router.push("/slip-gaji")}
+        />
         <MenuButton
           icon="clock"
           label="Lembur"
           onPress={() => router.push("/lembur")}
         />
-        <MenuButton icon="users" label="Tim Saya" />
-        <MenuButton icon="briefcase" label="Dinas" />
+        <MenuButton
+          icon="users"
+          label="Tim Saya"
+          onPress={() => router.push("/tim-saya")}
+        />
+        <MenuButton
+          icon="briefcase"
+          label="Dinas"
+          onPress={() => router.push("/form-dinas")}
+        />
       </View>
     </View>
   );
