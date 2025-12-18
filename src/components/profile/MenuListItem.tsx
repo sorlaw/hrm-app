@@ -9,6 +9,8 @@ interface MenuListItemProps {
   onPress?: () => void;
   isToggle?: boolean;
   isLast?: boolean; // Opsional jika ingin styling tambahan
+  toggleValue?: boolean;
+  onToggle?: () => void;
 }
 
 export const MenuListItem = ({
@@ -16,14 +18,35 @@ export const MenuListItem = ({
   label,
   onPress,
   isToggle = false,
+  toggleValue,
+  onToggle,
 }: MenuListItemProps) => {
-  const [isEnabled, setIsEnabled] = useState(true);
+  const [internalEnabled, setInternalEnabled] = useState(true);
+
+  // Use controlled value if provided, otherwise internal state
+  const isEnabled = toggleValue !== undefined ? toggleValue : internalEnabled;
+
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalEnabled(!internalEnabled);
+    }
+  };
 
   return (
     <TouchableOpacity
       style={styles.menuListItem}
-      onPress={onPress}
+      onPress={isToggle ? handleToggle : onPress}
       activeOpacity={0.7}
+      disabled={isToggle} // If it's a toggle item, the whole row click behavior might be different or same.
+    // Usually in iOS settings, clicking row toggles it or does nothing.
+    // Let's keep it simple: specific touchable for toggle, or whole row?
+    // The code had `onPress` on parent TOuchableOpacity.
+    // If isToggle, parent onPress triggers toggle logic?
+    // Existing code: `onPress={onPress}`. If isToggle is true, `onPress` might be undefined.
+    // Let's enable the parent to handle tap if it's not just a toggle switch.
+    // But here, let's assume if isToggle, we want to toggle.
     >
       <Feather
         name={icon as any}
@@ -34,7 +57,7 @@ export const MenuListItem = ({
       <Text style={styles.menuLabelText}>{label}</Text>
 
       {isToggle ? (
-        <TouchableOpacity onPress={() => setIsEnabled(!isEnabled)}>
+        <TouchableOpacity onPress={handleToggle}>
           <View
             style={[
               styles.toggleBackground,

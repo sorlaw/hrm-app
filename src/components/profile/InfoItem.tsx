@@ -29,7 +29,6 @@ export const InfoItem = ({
           <Text style={styles.infoLabel}>{label}</Text>
           <Text style={styles.infoValue}>{value}</Text>
         </View>
-        <Feather name="chevron-right" size={20} color="#D1D5DB" />
       </View>
       {!isLast && <View style={styles.divider} />}
     </View>
